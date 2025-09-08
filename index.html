@@ -1,0 +1,237 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+  <title>Hacker Love — Untukmu 💚</title>
+  <style>
+    :root{
+      --bg:#071015; --terminal:#081014; --accent:#00ff7f; --muted:#6b7280; --glass: rgba(255,255,255,0.03);
+      --mono: "SFMono-Regular", "Menlo", "Monaco", monospace;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;font-family:Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; background: radial-gradient(ellipse at 10% 10%, #031018 0%, #071018 40%, #030407 100%); color:#e6eef6; overflow-x:hidden}
+    canvas#matrix{position:fixed;inset:0;z-index:0;opacity:0.25}
+    .wrap{position:relative;z-index:2;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:16px}
+
+    .card{width:920px;max-width:100%;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border:1px solid rgba(0,255,127,0.06);backdrop-filter: blur(6px);box-shadow: 0 10px 30px rgba(2,6,23,0.6);border-radius:12px;padding:16px;display:grid;grid-template-columns:1fr 420px;gap:16px}
+
+    .terminal{background:var(--terminal);padding:14px;border-radius:8px;box-shadow: inset 0 1px 0 rgba(255,255,255,0.02);font-family:var(--mono);font-size:13px;line-height:1.5;color:var(--accent);height:280px;overflow:auto;position:relative}
+    .terminal .output{white-space:pre-wrap;word-break:break-word}
+
+    .side{padding:14px;border-radius:8px;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.02));border:1px solid rgba(255,255,255,0.02);display:flex;flex-direction:column;gap:12px}
+
+    h1{margin:0;font-size:18px;line-height:1.2}
+    .sub{color:var(--muted);font-size:12px}
+
+    .controls{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+    button.btn{flex:1 1 100%;background:transparent;border:1px solid rgba(255,255,255,0.08);padding:10px;border-radius:8px;color:var(--accent);cursor:pointer;font-family:var(--mono);font-size:14px;text-align:center}
+    button.btn:hover{transform:translateY(-2px)}
+
+    .heart{display:flex;align-items:center;justify-content:center;font-size:40px;color:#ff5c8a;text-shadow:0 6px 22px rgba(255,92,138,0.12)}
+    .reveal{background:linear-gradient(90deg,#001216, #04121a);padding:12px;border-radius:8px;flex:1;display:flex;flex-direction:column}
+
+    .progress-wrap{background:rgba(255,255,255,0.02);padding:6px;border-radius:8px}
+    .progress{height:12px;border-radius:8px;background:linear-gradient(90deg,#002b1f,#003a2a);overflow:hidden}
+    .bar{height:100%;width:0%;background:linear-gradient(90deg, rgba(0,255,127,0.15), rgba(0,255,127,0.45));box-shadow:0 0 20px rgba(0,255,127,0.09) inset}
+
+    .message{background:rgba(0,0,0,0.25);padding:10px;border-radius:8px;color:#dfffe6;font-family:var(--mono);font-size:13px;min-height:80px;display:flex;align-items:center;justify-content:center;text-align:center;word-break:break-word}
+
+    .footer{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between;margin-top:auto}
+
+    .small{font-size:12px;color:var(--muted)}
+
+    /* responsive */
+    @media (max-width:880px){
+      .card{grid-template-columns:1fr}
+      .terminal{height:240px}
+    }
+    @media (max-width:600px){
+      .wrap{padding:10px}
+      .card{padding:12px}
+      h1{font-size:16px}
+      .heart{font-size:32px}
+      .terminal{height:200px;font-size:12px}
+      button.btn{font-size:13px;padding:8px}
+    }
+    @media (max-width:400px){
+      h1{font-size:14px}
+      .heart{font-size:28px}
+      .terminal{height:180px;font-size:11px}
+      .message{font-size:12px;min-height:60px;padding:8px}
+    }
+  </style>
+</head>
+<body>
+  <canvas id="matrix"></canvas>
+  <div class="wrap">
+    <div class="card">
+      <div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;flex-wrap:wrap;gap:8px">
+          <div>
+            <h1>Hacker Console — Maafin gua Shila :(</h1>
+            <div class="sub">Mode: stealth · encrypting hati</div>
+          </div>
+          <div class="heart">❤️‍🔥</div>
+        </div>
+
+        <div class="terminal" id="terminal">
+          <div class="output" id="output">&gt; booting love-protocol v0.1
+Initializing modules...
+</div>
+          <div style="position:absolute;right:12px;bottom:12px;opacity:0.6;font-size:11px;color:var(--muted)">status: idle</div>
+        </div>
+
+        <div class="controls">
+          <button class="btn" id="startBtn">▶ Start Protocol</button>
+          <button class="btn" id="skipBtn">➤ Skip to message</button>
+          <button class="btn" id="copyBtn">📋 Salin pesan</button>
+        </div>
+      </div>
+
+      <div class="side">
+        <div class="reveal">
+          <div class="small">Decrypt progress</div>
+          <div class="progress-wrap" style="margin-top:8px">
+            <div class="progress"><div class="bar" id="bar"></div></div>
+          </div>
+
+          <div class="message" id="secret">[Pesan terenkripsi — tekan Start]</div>
+
+          <div class="footer">
+            <div class="small">For: <strong id="nameLabel">Shila</strong></div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;width:100%">
+              <button class="btn" id="playBtn">🔊 Putar efek</button>
+              <button class="btn" id="themeBtn">✨ Ganti tema</button>
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-top:8px;text-align:center;color:var(--muted);font-size:12px">Tip: jangan marah lagi sama gua ;v </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('matrix');
+    const ctx = canvas.getContext('2d');
+    let W = canvas.width = innerWidth;
+    let H = canvas.height = innerHeight;
+    const cols = Math.floor(W / 20) + 1;
+    const ypos = Array(cols).fill(0);
+    function matrixTick(){
+      ctx.fillStyle = 'rgba(0,0,0,0.06)';
+      ctx.fillRect(0,0,W,H);
+      ctx.fillStyle = '#00ff7f';
+      ctx.font = '14pt monospace';
+      ypos.forEach((y, ind) => {
+        const text = String.fromCharCode(33 + Math.random() * 94);
+        const x = ind * 20;
+        ctx.fillText(text, x, y);
+        if(y > 100 + Math.random() * 10000) ypos[ind] = 0; else ypos[ind] = y + 18;
+      });
+    }
+    setInterval(matrixTick, 50);
+    addEventListener('resize', ()=>{W=canvas.width=innerWidth;H=canvas.height=innerHeight});
+
+    const output = document.getElementById('output');
+    const secret = document.getElementById('secret');
+    const bar = document.getElementById('bar');
+    const nameLabel = document.getElementById('nameLabel');
+    let theme = 0;
+
+    function typeLines(lines, cb){
+      let i=0;
+      function nextLine(){
+        if(i>=lines.length){ if(cb) cb(); return; }
+        const line = lines[i++];
+        let j=0; output.innerHTML += '\n';
+        const t = setInterval(()=>{
+          output.innerHTML = output.innerHTML.replace(/\n$/, '\n') + line.slice(0,j);
+          j++;
+          if(j>line.length){ clearInterval(t); output.innerHTML += '\n'; setTimeout(nextLine, 400); }
+          output.scrollTop = output.scrollHeight;
+        }, 35);
+      }
+      nextLine();
+    }
+
+    document.getElementById('startBtn').addEventListener('click', ()=>{
+      output.innerHTML = '> initializing love-protocol v0.1\n';
+      typeLines(['connecting to heart.socket...','authenticating...','decrypting payload...'], ()=>{
+        runDecryptSequence();
+      });
+    });
+    document.getElementById('skipBtn').addEventListener('click', ()=>{revealMessage();});
+    document.getElementById('themeBtn').addEventListener('click', ()=>{
+      theme = (theme+1)%3;
+      if(theme===0){document.documentElement.style.setProperty('--accent','#00ff7f');}
+      if(theme===1){document.documentElement.style.setProperty('--accent','#00c1ff');}
+      if(theme===2){document.documentElement.style.setProperty('--accent','#ff8ab6');}
+    });
+    document.getElementById('playBtn').addEventListener('click', ()=>{playBeep();});
+    document.getElementById('copyBtn').addEventListener('click', ()=>{
+      const txt = revealMessage(true);
+      navigator.clipboard.writeText(txt).then(()=>{
+        alert('Pesan berhasil disalin! Kirim ke dia :)');
+      }).catch(()=>alert('Gagal menyalin — browser mungkin membatasi clipboard'));
+    });
+
+    function runDecryptSequence(){
+      let p=0;
+      bar.style.width = '0%';
+      secret.textContent = '[mendekripsi]';
+      const iv = setInterval(()=>{
+        p += Math.random()*8 + 4;
+        if(p>100) p=100;
+        bar.style.width = p+'%';
+        if(p>=100){ clearInterval(iv); setTimeout(revealMessage, 800); }
+      }, 160);
+    }
+
+    function revealMessage(returnOnly=false){
+      const name = prompt('kalo ga maafin gua, gua panggil lu bogel', nameLabel.textContent) || nameLabel.textContent;
+      nameLabel.textContent = name;
+      const love = `Hai ${name},\n\nMaafin guaaaa,masa ngambek sama gua lu \nnanti gua ga punya teman curhat lagi :v\nlagian juga lu nanti bakal tau muka gua gimana\n\n-- from EL ❤️`;
+      secret.textContent = love;
+      output.innerHTML += '\n> payload decrypted:\n' + love + '\n';
+      output.scrollTop = output.scrollHeight;
+      triggerHeart();
+      if(returnOnly) return love; else return love;
+    }
+
+    function playBeep(){
+      try{
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const o = ctx.createOscillator();
+        const g = ctx.createGain();
+        o.type='sine'; o.frequency.value = 440; g.gain.value = 0.05;
+        o.connect(g); g.connect(ctx.destination);
+        o.start();
+        o.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.35);
+        setTimeout(()=>{o.stop(); ctx.close()}, 400);
+      }catch(e){console.warn(e)}
+    }
+
+    function triggerHeart(){
+      const frames = [
+        "  .:::.   .:::.  \n :::::::.::::::: \n:::::::::::::::  \n '::::::::::::'   \n   '::::::::'     \n     '::::'       ",
+        "   .:::.. .:::  \n  :::::::::::::  \n ::::::::::::::: \n  '::::::::::::'  \n    '::::::::'    \n      ':::'       ",
+        "     .:::.      \n   :::::::::::    \n  :::::::::::::   \n   '::::::::::'   \n     '::::::'     \n       ':'        "
+      ];
+      let i=0; const t = setInterval(()=>{
+        output.innerHTML += '\n' + frames[i%frames.length] + '\n';
+        i++; if(i>4){clearInterval(t)}; output.scrollTop = output.scrollHeight;
+      }, 300);
+      playBeep();
+    }
+
+    nameLabel.addEventListener('click', ()=>{
+      const n = prompt('Ganti nama penerima:', nameLabel.textContent);
+      if(n) nameLabel.textContent = n;
+    });
+    document.getElementById('terminal').addEventListener('dblclick', ()=>{document.getElementById('startBtn').click()});
+    output.innerHTML += '\n> ready. tekan Start Protocol untuk mulai. (atau double-click di terminal)\n';
+  </script>
+</body>
+</html>
